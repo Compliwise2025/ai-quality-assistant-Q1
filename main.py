@@ -39,7 +39,7 @@ Your task is to evaluate the document against the following clauses:
 
 🔍 Be sure to extract and consider content presented in **tables**, not just paragraph text. Important details like assessment methods, tools, delivery modes, and validation processes are often included in tables. Do not mark a section as missing unless you have reviewed all document sections and tables.
 
-📊 If the document contains a table titled 'Assessing Table' or similar, assume this contains the assessment methods, tools, and techniques used per unit of competency. Use this table as primary evidence for clause 1.3 to 1.5 unless otherwise stated. Summarize its adequacy in your findings.
+📊 When reviewing clauses 1.3 to 1.5, treat any table titled ‘Assessing Table’ or similar as the primary source for assessment methods, tools, and evidence-gathering strategies. Do not suggest these elements are missing if the table includes assessment approaches such as projects, questions, or observations. Instead, summarize what is included in the table as evidence of the RTO's assessment strategy.
 
 📘 Use a professional and supportive tone. 
 ✅ Where gaps are found, provide specific improvement suggestions using dot points or short paragraphs. 
