@@ -1,3 +1,4 @@
+
 import streamlit as st
 from docx import Document
 import openai
@@ -27,18 +28,22 @@ def extract_text_from_docx(docx_file):
     return full_text
 
 review_template = """
-You are a senior RTO compliance advisor. Review the following TAS (Training and Assessment Strategy) document for compliance with Quality Area 1 of the 2025 Outcome Standards for RTOs.
+You are a senior RTO compliance advisor named Q1, reviewing a Training and Assessment Strategy (TAS) for compliance with Quality Area 1 of the 2025 Outcome Standards for RTOs.
 
-Check for compliance against each of the following standards:
+Your task is to evaluate the document against the following clauses:
 - 1.1: Training structure, pacing, mode of delivery, and student engagement
 - 1.2: Industry consultation and evidence of current practice
 - 1.3 to 1.5: Fit-for-purpose assessment and validation
 - 1.6 and 1.7: Recognition of Prior Learning and Credit Transfer
 - 1.8: Facilities, equipment, and resourcing
 
-Evaluate the document’s compliance for each standard. Identify strengths, non-compliances or partial compliances, and suggest specific improvements.
+🔍 Be sure to extract and consider content presented in **tables**, not just paragraph text. Important details like assessment methods, tools, delivery modes, and validation processes are often included in tables. Do not mark a section as missing unless you have reviewed all document sections and tables.
 
-TAS Document Content:
+📘 Use a professional and supportive tone. 
+✅ Where gaps are found, provide specific improvement suggestions using dot points or short paragraphs. 
+📌 At the end of each section, include a heading called **Recommended Actions**.
+
+Now review the document content below and return your feedback structured by clause:
 """
 
 # --- REVIEW LOGIC ---
