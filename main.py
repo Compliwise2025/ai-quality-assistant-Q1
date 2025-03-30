@@ -49,7 +49,7 @@ if uploaded_file:
 
         try:
             response = client.chat.completions.create(
-                model="gpt-4",
+                model="gpt-3.5-turbo",
                 messages=[
                     {"role": "system", "content": "You are an expert in RTO compliance with deep knowledge of Quality Area 1 from the 2025 Outcome Standards."},
                     {"role": "user", "content": prompt}
