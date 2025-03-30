@@ -41,6 +41,8 @@ Your task is to evaluate the document against the following clauses:
 
 📊 When reviewing clauses 1.3 to 1.5, treat any table titled ‘Assessing Table’ or similar as the primary source for assessment methods, tools, and evidence-gathering strategies. Do not suggest these elements are missing if the table includes assessment approaches such as projects, questions, or observations. Instead, summarize what is included in the table as evidence of the RTO's assessment strategy.
 
+📑 For clauses 1.6 and 1.7, if the TAS or related document includes a reference to the RTO’s RPL or Credit Transfer policy or refers to the Student Handbook where this information is provided, consider this sufficient evidence. Do not require the full RPL or CT content to be included directly in the TAS.
+
 📘 Use a professional and supportive tone. 
 ✅ Where gaps are found, provide specific improvement suggestions using dot points or short paragraphs. 
 📌 At the end of each section, include a heading called **Recommended Actions**.
