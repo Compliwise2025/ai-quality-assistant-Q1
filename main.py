@@ -1,13 +1,10 @@
-# AI Assistant – Quality Area 1 (Training and Assessment)
-# Hosted version – Initial build using Streamlit + GPT + LangChain
-
 import streamlit as st
 from docx import Document
 import openai
 import os
 
 # --- CONFIGURATION ---
-openai.api_key = st.secrets["OPENAI_API_KEY"]  # Add this to your Streamlit Cloud secrets
+client = openai.OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 # --- SETUP ---
 st.set_page_config(page_title="AI Compliance Assistant – Quality Area 1", layout="wide")
@@ -51,15 +48,15 @@ if uploaded_file:
         prompt = review_template + extracted_text
 
         try:
-            response = openai.ChatCompletion.create(
-                model="gpt-4-turbo",
+            response = client.chat.completions.create(
+                model="gpt-4",
                 messages=[
                     {"role": "system", "content": "You are an expert in RTO compliance with deep knowledge of Quality Area 1 from the 2025 Outcome Standards."},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.3
             )
-            feedback = response["choices"][0]["message"]["content"]
+            feedback = response.choices[0].message.content
             st.success("✅ Review complete. See feedback below:")
             st.text_area("Compliance Review Feedback", feedback, height=500)
         except Exception as e:
