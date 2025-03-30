@@ -3,73 +3,80 @@ import streamlit as st
 from docx import Document
 import openai
 import os
+import fitz  # PyMuPDF for reading PDF files
 
 # --- CONFIGURATION ---
 client = openai.OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 # --- SETUP ---
-st.set_page_config(page_title="AI Compliance Assistant – Quality Area 1", layout="wide")
-st.title("📘 AI Compliance Assistant – Quality Area 1")
+st.set_page_config(page_title="Q1 Compliance Assistant – UOC Checker", layout="wide")
+st.title("📘 Q1 Compliance Assistant – Compare UOC with TAS")
 
 st.markdown("""
-Use this tool to review a Training and Assessment Strategy (TAS) document against Quality Area 1 of the Draft Standards for RTOs 2025.
+Upload a TAS document and one or more Unit of Competency (UOC) files. Q1 will extract key details from each UOC and verify if the TAS accurately reflects:
 
-**Focus:** Standards 1.1 to 1.8  
-**Purpose:** Identify alignment, gaps, and provide improvement suggestions.
+- Unit code and title
+- Usage recommendation
+- Release number
+- Application
+- Pre-requisite unit
+- Foundation skills
+- Assessment conditions
 """)
 
 # --- UPLOAD ---
-uploaded_file = st.file_uploader("📄 Upload your TAS document (Word only)", type=["docx"])
+tas_file = st.file_uploader("📄 Upload TAS document (Word only)", type=["docx"])
+uoc_files = st.file_uploader("📑 Upload one or more UOC documents (PDF)", type=["pdf"], accept_multiple_files=True)
 
-# --- HELPER FUNCTIONS ---
-def extract_text_from_docx(docx_file):
-    doc = Document(docx_file)
-    full_text = "\n".join([para.text for para in doc.paragraphs])
-    return full_text
+# --- HELPERS ---
+def extract_text_from_docx(file):
+    doc = Document(file)
+    return "\n".join([para.text for para in doc.paragraphs])
 
-review_template = """
-You are a senior RTO compliance advisor named Q1, reviewing a Training and Assessment Strategy (TAS) for compliance with Quality Area 1 of the 2025 Outcome Standards for RTOs.
+def extract_text_from_pdf(file):
+    pdf = fitz.open(stream=file.read(), filetype="pdf")
+    return "\n".join([page.get_text() for page in pdf])
 
-Your task is to evaluate the document against the following clauses:
-- 1.1: Training structure, pacing, mode of delivery, and student engagement
-- 1.2: Industry consultation and evidence of current practice
-- 1.3 to 1.5: Fit-for-purpose assessment and validation
-- 1.6 and 1.7: Recognition of Prior Learning and Credit Transfer
-- 1.8: Facilities, equipment, and resourcing
+# --- PROMPT TEMPLATE ---
+uoc_check_prompt = """
+You are Q1, a senior RTO compliance assistant. Your task is to compare the following Unit of Competency with a TAS document and identify whether the TAS includes or aligns with the following key details from the UOC:
 
-🔍 Be sure to extract and consider content presented in **tables**, not just paragraph text. Important details like assessment methods, tools, delivery modes, and validation processes are often included in tables. Do not mark a section as missing unless you have reviewed all document sections and tables.
+- Unit code and title
+- Usage recommendation
+- Release number
+- Application
+- Pre-requisite unit
+- Foundation skills
+- Assessment conditions
 
-📊 When reviewing clauses 1.3 to 1.5, treat any table titled ‘Assessing Table’ or similar as the primary source for assessment methods, tools, and evidence-gathering strategies. Do not suggest these elements are missing if the table includes assessment approaches such as projects, questions, or observations. Instead, summarize what is included in the table as evidence of the RTO's assessment strategy.
+For each field, state whether it is addressed in the TAS. If something is missing, suggest what could be added.
 
-📑 For clauses 1.6 and 1.7, if the TAS or related document includes a reference to the RTO’s RPL or Credit Transfer policy or refers to the Student Handbook where this information is provided, consider this sufficient evidence. Do not require the full RPL or CT content to be included directly in the TAS.
-
-📘 Use a professional and supportive tone. 
-✅ Where gaps are found, provide specific improvement suggestions using dot points or short paragraphs. 
-📌 At the end of each section, include a heading called **Recommended Actions**.
-
-Now review the document content below and return your feedback structured by clause:
+Return your response structured clearly by unit.
 """
 
-# --- REVIEW LOGIC ---
-if uploaded_file:
-    with st.spinner("Reading and reviewing your TAS document..."):
-        extracted_text = extract_text_from_docx(uploaded_file)
-        prompt = review_template + extracted_text
-
-        try:
-            response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": "You are an expert in RTO compliance with deep knowledge of Quality Area 1 from the 2025 Outcome Standards."},
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=0.3
-            )
-            feedback = response.choices[0].message.content
-            st.success("✅ Review complete. See feedback below:")
-            st.text_area("Compliance Review Feedback", feedback, height=500)
-        except Exception as e:
-            st.error(f"❌ An error occurred: {e}")
-
+# --- LOGIC ---
+if tas_file and uoc_files:
+    with st.spinner("Reading and comparing documents..."):
+        tas_text = extract_text_from_docx(tas_file)
+        results = []
+        for uoc in uoc_files:
+            uoc_text = extract_text_from_pdf(uoc)
+            full_prompt = uoc_check_prompt + f"\n\n---\nTAS Content:\n{tas_text}\n\n---\nUOC Content:\n{uoc_text}"
+            try:
+                response = client.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=[
+                        {"role": "system", "content": "You are an expert in RTO compliance and training product validation."},
+                        {"role": "user", "content": full_prompt}
+                    ],
+                    temperature=0.3
+                )
+                feedback = response.choices[0].message.content
+                results.append(f"### Review for {uoc.name}\n\n{feedback}")
+            except Exception as e:
+                st.error(f"❌ An error occurred reviewing {uoc.name}: {e}")
+        st.success("✅ UOC reviews completed:")
+        for result in results:
+            st.markdown(result)
 else:
-    st.info("👆 Upload a TAS document to begin the review.")
+    st.info("👆 Please upload a TAS and at least one UOC PDF file to begin.")
